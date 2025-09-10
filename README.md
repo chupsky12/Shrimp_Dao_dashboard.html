@@ -1,1 +1,461 @@
-# Shrimp_Dao_dashboard.html
+# Shrimp_Dao_dashboard.html<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Shrimp DAO — Governance & Dashboard</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <style>
+    :root{--accent:#ff6b6b;--muted:#6b7280}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;background:#f7fafc;color:#0f172a}
+    header{background:linear-gradient(90deg,#fff 0,#f1f5f9);padding:20px 24px;box-shadow:0 1px 0 rgba(15,23,42,0.04)}
+    .container{max-width:1100px;margin:24px auto;padding:0 18px}
+    h1{margin:0;font-size:20px}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:18px}
+    .card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 6px 18px rgba(15,23,42,0.06)}
+    .small{font-size:13px;color:var(--muted)}
+    .section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    button, .btn{background:var(--accent);color:white;border:none;padding:8px 10px;border-radius:8px;cursor:pointer}
+    .ghost{background:transparent;color:var(--accent);border:1px solid rgba(255,107,107,0.18)}
+    label{display:block;font-weight:600;margin-top:8px}
+    input, textarea, select{width:100%;padding:8px;border-radius:8px;border:1px solid #e6e9ef;margin-top:6px}
+    .list{list-style:none;padding:0;margin:0}
+    .list li{padding:10px;border-radius:8px;border:1px dashed #eef2f7;margin-bottom:8px;background:#fbfdff}
+    .kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .kpi{padding:12px;border-radius:10px;background:linear-gradient(180deg,#fff,#fbfdff)}
+    footer{margin:24px 0;text-align:center;color:var(--muted);font-size:13px}
+    .subsection{margin-top:12px;padding:10px;border-radius:10px;background:#fcffff;border:1px solid #eef6f9}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Shrimp DAO — Governance & Ownership (Interactive Prototype)</h1>
+      <div class="small">Prototype implements governance, proposals, roadmap, protocol initiatives and analytics based on your brief.</div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="grid">
+      <div>
+        <section class="card" id="governance">
+          <div class="section-title">
+            <strong>Governance & Ownership</strong>
+            <small class="small">NFT holders & DAO actions</small>
+          </div>
+
+          <p class="small">Vote on drop themes, fee splits, grant allocations. Submit on-chain proposals (mock Anoma intents).</p>
+
+          <label for="holderCount">Simulated NFT holders</label>
+          <input id="holderCount" type="number" min="1" value="1200">
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <button id="simulateVotes">Simulate random votes</button>
+            <button id="resetVotes" class="ghost">Reset</button>
+          </div>
+
+          <hr style="margin:14px 0">
+
+          <strong>Create On-Chain Proposal</strong>
+          <div class="small">Creates a proposal object and queues it — UI mock of Anoma intent submission.</div>
+          <label for="proposalTitle">Title</label>
+          <input id="proposalTitle" placeholder="e.g. Mint 50 rare Shrimp">
+          <label for="proposalBody">Details</label>
+          <textarea id="proposalBody" rows="3" placeholder="Explain the proposal..."></textarea>
+          <label for="proposalType">Type</label>
+          <select id="proposalType">
+            <option>Mint</option>
+            <option>Fee Split</option>
+            <option>Grant</option>
+            <option>Protocol</option>
+            <option>Other</option>
+          </select>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="submitProposal">Submit Proposal</button>
+            <button id="executeProposal" class="ghost">Execute Next</button>
+            <button id="exportState" class="ghost">Export JSON</button>
+          </div>
+
+          <hr style="margin:14px 0">
+          <strong>Proposals Queue</strong>
+          <ul id="proposalsList" class="list" style="margin-top:8px"></ul>
+        </section>
+
+        <!-- Roadmap & Retros -->
+        <section class="card" style="margin-top:18px">
+          <div class="section-title"><strong>Roadmap (Public)</strong><small class="small">Trello / GitHub style milestones</small></div>
+          <p class="small">Milestones are editable and persisted locally. Use them to mirror your public Trello/GitHub board.</p>
+          <label for="newMilestone">New Milestone</label>
+          <input id="newMilestone" placeholder="e.g. Cross-chain gallery launch">
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="addMilestone">Add Milestone</button>
+            <button id="clearMilestones" class="ghost">Clear</button>
+          </div>
+          <ul id="milestones" class="list" style="margin-top:12px"></ul>
+        </section>
+
+        <section class="card" style="margin-top:18px">
+          <div class="section-title"><strong>Quarterly Retros & Feedback</strong><small class="small">Surveys & adjustments</small></div>
+          <label for="retrosNotes">Notes from community survey</label>
+          <textarea id="retrosNotes" rows="4" placeholder="Paste/Write community feedback..."></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="saveRetros">Save Retros</button>
+            <button id="loadRetros" class="ghost">Load Last</button>
+          </div>
+        </section>
+
+        <!-- New: Protocol & Privacy Sections -->
+        <section class="card" style="margin-top:18px">
+          <div class="section-title"><strong>Protocol, Scalability & Privacy</strong><small class="small">Design initiatives & prototypes</small></div>
+          <div class="subsection">
+            <strong>Protocol & Scalability</strong>
+            <div class="small">Goal: Handle thousands of intents/sec, minimal fees.</div>
+            <ul class="small">
+              <li>Pilot zk-rollup & optimistic rollup batching</li>
+              <li>Prototype sharding / intent channels for parallel solver processing</li>
+            </ul>
+            <label for="protoPriority">Priority (1-5)</label>
+            <input id="protoPriority" type="number" min="1" max="5" value="4">
+            <div style="display:flex;gap:8px;margin-top:8px"><button id="queueProto">Queue Initiative</button><button id="clearProto" class="ghost">Clear</button></div>
+          </div>
+
+          <div class="subsection">
+            <strong>Privacy & Security</strong>
+            <div class="small">Goal: Confidential by default.</div>
+            <ul class="small">
+              <li>Integrate zk-proof systems (Halo2, Spartan)</li>
+              <li>Selective-disclosure intents</li>
+              <li>MPC & threshold-signature wallets</li>
+            </ul>
+            <label for="privacyNotes">Notes / Research links</label>
+            <input id="privacyNotes" placeholder="Add links or comments">
+            <div style="display:flex;gap:8px;margin-top:8px"><button id="savePrivacy">Save</button><button id="auditPrivacy" class="ghost">Request Audit</button></div>
+          </div>
+        </section>
+
+        <!-- Cross-chain & Dev Experience -->
+        <section class="card" style="margin-top:18px">
+          <div class="section-title"><strong>Cross-Chain & Developer Experience</strong><small class="small">Interoperability & DX</small></div>
+          <div class="subsection">
+            <strong>Cross-Chain Interoperability</strong>
+            <div class="small">Build trust-minimized IBC bridges and a universal intent schema.</div>
+            <label for="bridgeStatus">Bridge Pilot Status</label>
+            <select id="bridgeStatus"><option>Not started</option><option>Planning</option><option>Piloting</option><option>Live</option></select>
+          </div>
+
+          <div class="subsection">
+            <strong>Developer Experience</strong>
+            <div class="small">SDKs (JS/TS, Python, Rust), dev cluster CLI, quickstarts & tutorials.</div>
+            <div style="display:flex;gap:8px;margin-top:8px"><button id="generateSDK">Generate SDK Stub</button><button id="launchDevCluster" class="ghost">Launch Dev Cluster</button></div>
+          </div>
+
+          <div class="subsection">
+            <strong>UX & Wallet Integrations</strong>
+            <div class="small">Intent-aware wallet plugins, React/Vue components for common flows.</div>
+            <label for="walletIntegrations">Integrations</label>
+            <input id="walletIntegrations" placeholder="e.g. MetaMask plugin, Mobile wallet SDK">
+          </div>
+        </section>
+
+        <!-- Governance Ops & Ecosystem -->
+        <section class="card" style="margin-top:18px">
+          <div class="section-title"><strong>Governance & Ecosystem</strong><small class="small">On-chain ops, grants & community</small></div>
+          <div class="subsection">
+            <strong>Governance & On-Chain Ops</strong>
+            <div class="small">Modular modules for fee tuning, DAO referenda via intents, public dashboard.</div>
+            <div style="display:flex;gap:8px;margin-top:8px"><button id="publishModule">Publish Governance Module</button></div>
+          </div>
+
+          <div class="subsection">
+            <strong>Ecosystem & Community</strong>
+            <div class="small">Quarterly grants, hackathons, ambassador program.</div>
+            <label for="grantPool">Grant Pool ($USD)</label>
+            <input id="grantPool" type="number" value="50000">
+            <div style="display:flex;gap:8px;margin-top:8px"><button id="fundGrants">Allocate Grants</button><button id="announceHackathon" class="ghost">Announce Hackathon</button></div>
+          </div>
+
+          <div class="subsection">
+            <strong>Analytics & Insights</strong>
+            <div class="small">Intent Explorer, webhooks, monthly reports.</div>
+            <div style="display:flex;gap:8px;margin-top:8px"><button id="openExplorer">Open Intent Explorer (mock)</button><button id="scheduleReport" class="ghost">Schedule Report</button></div>
+          </div>
+        </section>
+      </div>
+
+      <aside>
+        <section class="card">
+          <div class="section-title"><strong>Marketing & Partnerships</strong><small class="small">Marketplace & metaverse plays</small></div>
+          <ul class="small">
+            <li>Integrate with cross-chain aggregators (e.g. Mystiko, NFTrade)</li>
+            <li>Cross-chain showcases: Spatial, Decentraland pop-ups</li>
+            <li>Influencer live mints with Web3 artists/streamers</li>
+          </ul>
+        </section>
+
+        <section class="card" style="margin-top:18px">
+          <div class="section-title"><strong>Metrics & KPIs</strong><small class="small">On-chain & community</small></div>
+          <div class="kpi-grid">
+            <div class="kpi"><div class="small">Shrimp minted / week</div><div id="kpiMinted" style="font-size:20px;font-weight:700">—</div></div>
+            <div class="kpi"><div class="small">Daily active minters</div><div id="kpiActive" style="font-size:20px;font-weight:700">—</div></div>
+            <div class="kpi"><div class="small">Unique holders</div><div id="kpiHolders" style="font-size:20px;font-weight:700">—</div></div>
+            <div class="kpi"><div class="small">DAO turnout (last proposal)</div><div id="kpiTurnout" style="font-size:20px;font-weight:700">—</div></div>
+          </div>
+
+          <canvas id="mintChart" style="margin-top:12px;max-height:200px"></canvas>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button id="refreshMetrics">Refresh Metrics</button>
+            <button id="simulateActivity" class="ghost">Simulate Activity</button>
+          </div>
+        </section>
+
+        <section class="card" style="margin-top:18px">
+          <div class="section-title"><strong>Quick Tools</strong><small class="small">Export / Import</small></div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button id="downloadJSON">Download State (.json)</button>
+            <input id="importFile" type="file" accept="application/json">
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <footer>Prototype — data stored in your browser (localStorage). Use Export to share state with teammates.</footer>
+  </main>
+
+<script>
+// Simple single-file app state persisted to localStorage
+const KEY = 'shrimp_dao_state_v1'
+const defaultState = {
+  holders: 1200,
+  proposals: [],
+  milestones: [
+    'Tech: Anoma integration (MVP)',
+    'Drops: 1st themed release',
+    'Community: Live mint event with streamer'
+  ],
+  retros: '',
+  metrics: {
+    mintedPerWeek: [12, 18, 25, 22, 30, 28, 26],
+    dailyActive: 120,
+    uniqueHolders: 840,
+    lastTurnout: 0.12
+  },
+  protocolQueue: [],
+  privacy: {},
+  bridges: {},
+  dev: {},
+  ecosystem: {}
+}
+
+function loadState(){
+  try{const s = localStorage.getItem(KEY); return s?JSON.parse(s):structuredClone(defaultState)}catch(e){return structuredClone(defaultState)}
+}
+function saveState(state){localStorage.setItem(KEY,JSON.stringify(state))}
+let state = loadState()
+
+// DOM refs
+const holderCount = document.getElementById('holderCount')
+const simulateVotesBtn = document.getElementById('simulateVotes')
+const resetVotesBtn = document.getElementById('resetVotes')
+const proposalTitle = document.getElementById('proposalTitle')
+const proposalBody = document.getElementById('proposalBody')
+const proposalType = document.getElementById('proposalType')
+const submitProposal = document.getElementById('submitProposal')
+const executeProposal = document.getElementById('executeProposal')
+const proposalsList = document.getElementById('proposalsList')
+const addMilestone = document.getElementById('addMilestone')
+const newMilestone = document.getElementById('newMilestone')
+const milestonesEl = document.getElementById('milestones')
+const clearMilestones = document.getElementById('clearMilestones')
+const retrosNotes = document.getElementById('retrosNotes')
+const saveRetros = document.getElementById('saveRetros')
+const loadRetros = document.getElementById('loadRetros')
+const kpiMinted = document.getElementById('kpiMinted')
+const kpiActive = document.getElementById('kpiActive')
+const kpiHolders = document.getElementById('kpiHolders')
+const kpiTurnout = document.getElementById('kpiTurnout')
+const refreshMetrics = document.getElementById('refreshMetrics')
+const simulateActivity = document.getElementById('simulateActivity')
+const exportState = document.getElementById('exportState')
+const downloadJSON = document.getElementById('downloadJSON')
+const importFile = document.getElementById('importFile')
+
+// New refs
+const protoPriority = document.getElementById('protoPriority')
+const queueProto = document.getElementById('queueProto')
+const clearProto = document.getElementById('clearProto')
+const privacyNotes = document.getElementById('privacyNotes')
+const savePrivacy = document.getElementById('savePrivacy')
+const auditPrivacy = document.getElementById('auditPrivacy')
+const bridgeStatus = document.getElementById('bridgeStatus')
+const generateSDK = document.getElementById('generateSDK')
+const launchDevCluster = document.getElementById('launchDevCluster')
+const walletIntegrations = document.getElementById('walletIntegrations')
+const publishModule = document.getElementById('publishModule')
+const grantPool = document.getElementById('grantPool')
+const fundGrants = document.getElementById('fundGrants')
+const announceHackathon = document.getElementById('announceHackathon')
+const openExplorer = document.getElementById('openExplorer')
+const scheduleReport = document.getElementById('scheduleReport')
+
+// Chart
+const ctx = document.getElementById('mintChart').getContext('2d')
+let mintChart = new Chart(ctx,{type:'line',data:{labels:state.metrics.mintedPerWeek.map((_,i)=>`W${i+1}`),datasets:[{label:'Minted/week',data:state.metrics.mintedPerWeek,fill:true,tension:0.4}]},options:{plugins:{legend:{display:false}},maintainAspectRatio:false}})
+
+function render(){
+  // holders
+  holderCount.value = state.holders
+  // proposals
+  proposalsList.innerHTML = ''
+  state.proposals.forEach((p,idx)=>{
+    const li = document.createElement('li')
+    li.innerHTML = `<strong>${p.title}</strong> <div class=\"small\">${p.type} • ${p.status}</div><div class=\"small\">${p.body}</div><div style=\"margin-top:8px;display:flex;gap:8px\"><button onclick=\"vote(${idx},'yes')\">Yes (${p.yes})</button><button class=\"ghost\" onclick=\"vote(${idx},'no')\">No (${p.no})</button></div>`
+    proposalsList.appendChild(li)
+  })
+  // milestones
+  milestonesEl.innerHTML = ''
+  state.milestones.forEach((m,i)=>{
+    const li = document.createElement('li')
+    li.innerHTML = `${m} <div style=\"margin-top:6px;display:flex;gap:6px\"><button class=\"ghost\" onclick=\"removeMilestone(${i})\">Remove</button></div>`
+    milestonesEl.appendChild(li)
+  })
+  // retros
+  retrosNotes.value = state.retros
+  // KPIs
+  kpiMinted.innerText = Math.round(average(state.metrics.mintedPerWeek))
+  kpiActive.innerText = state.metrics.dailyActive
+  kpiHolders.innerText = state.metrics.uniqueHolders
+  kpiTurnout.innerText = `${Math.round(state.metrics.lastTurnout*100)}%`
+  // new fields
+  protoPriority.value = state.protocolPriority || 4
+  privacyNotes.value = state.privacy.notes || ''
+  bridgeStatus.value = state.bridges.status || 'Not started'
+  walletIntegrations.value = state.dev.walletIntegrations || ''
+  grantPool.value = state.ecosystem.grantPool || 50000
+
+  // chart
+  mintChart.data.labels = state.metrics.mintedPerWeek.map((_,i)=>`W${i+1}`)
+  mintChart.data.datasets[0].data = state.metrics.mintedPerWeek
+  mintChart.update()
+  saveState(state)
+}
+
+function average(arr){return arr.reduce((a,b)=>a+b,0)/arr.length}
+
+// Voting functions
+window.vote = function(index,side){
+  const p = state.proposals[index]; if(!p) return
+  if(side==='yes') p.yes++
+  else p.no++
+  // update turnout
+  const turnout = (p.yes + p.no)/state.holders
+  state.metrics.lastTurnout = turnout
+  p.status = 'voting'
+  render()
+}
+
+simulateVotesBtn.addEventListener('click',()=>{
+  const holders = parseInt(holderCount.value)||state.holders
+  state.holders = holders
+  state.proposals.forEach(p=>{
+    const yes = Math.floor(Math.random()*holders*0.2)
+    const no = Math.floor(Math.random()*holders*0.1)
+    p.yes = (p.yes||0)+yes
+    p.no = (p.no||0)+no
+    p.status = 'voting'
+  })
+  render()
+})
+resetVotesBtn.addEventListener('click',()=>{
+  state.proposals.forEach(p=>{p.yes=0;p.no=0;p.status='queued'})
+  render()
+})
+
+// Proposals
+submitProposal.addEventListener('click',()=>{
+  const title = proposalTitle.value.trim() || 'Untitled Proposal'
+  const body = proposalBody.value.trim() || ''
+  const type = proposalType.value
+  const proposal = {title,body,type,status:'queued',yes:0,no:0,createdAt:new Date().toISOString(),id:Date.now()}
+  state.proposals.push(proposal)
+  proposalTitle.value='';proposalBody.value=''
+  render()
+})
+
+executeProposal.addEventListener('click',()=>{
+  const next = state.proposals.find(p=>p.status==='queued' || p.status==='voting')
+  if(!next) return alert('No queued proposals')
+  if(next.yes > next.no){ next.status='executed'; alert('Executed: '+next.title) }
+  else { next.status='rejected'; alert('Rejected: '+next.title) }
+  render()
+})
+
+// Milestones
+addMilestone.addEventListener('click',()=>{
+  const text = newMilestone.value.trim()
+  if(!text) return
+  state.milestones.push(text)
+  newMilestone.value=''
+  render()
+})
+window.removeMilestone = function(i){ state.milestones.splice(i,1); render() }
+clearMilestones.addEventListener('click',()=>{ if(confirm('Clear all milestones?')){ state.milestones=[]; render() } })
+
+// Retros
+saveRetros.addEventListener('click',()=>{ state.retros = retrosNotes.value; saveState(state); alert('Saved') })
+loadRetros.addEventListener('click',()=>{ retrosNotes.value = state.retros || ''; alert('Loaded') })
+
+// Protocol queue actions
+queueProto.addEventListener('click',()=>{
+  const item = {id:Date.now(),priority:parseInt(protoPriority.value)||4,createdAt:new Date().toISOString()}
+  state.protocolQueue = state.protocolQueue||[]
+  state.protocolQueue.push(item)
+  alert('Queued protocol initiative')
+  render()
+})
+clearProto.addEventListener('click',()=>{ state.protocolQueue=[]; render(); alert('Cleared protocol queue') })
+
+// Privacy
+savePrivacy.addEventListener('click',()=>{ state.privacy.notes = privacyNotes.value; saveState(state); alert('Privacy notes saved') })
+auditPrivacy.addEventListener('click',()=>{ alert('Audit requested — add workflow to integrate third-party audit') })
+
+// Bridges & DX
+generateSDK.addEventListener('click',()=>{ alert('SDK stub generated (mock) — implement generator to scaffold SDKs') })
+launchDevCluster.addEventListener('click',()=>{ alert('Dev cluster started (mock) — integrate with docker/CLI for real)') })
+
+// Ecosystem actions
+fundGrants.addEventListener('click',()=>{ state.ecosystem.grantPool = parseInt(grantPool.value)||0; alert('Grant pool updated') })
+announceHackathon.addEventListener('click',()=>{ alert('Hackathon announced to community channels (mock)') })
+
+// Analytics & Explorer
+openExplorer.addEventListener('click',()=>{ alert('Opening Intent Explorer (mock) — implement indexer + filters for real) })
+scheduleReport.addEventListener('click',()=>{ alert('Monthly report scheduled (mock)') })
+
+// Metrics
+refreshMetrics.addEventListener('click',()=>{ render(); alert('Metrics refreshed (from local state)') })
+simulateActivity.addEventListener('click',()=>{
+  const arr = state.metrics.mintedPerWeek.slice()
+  arr.push(Math.max(0, Math.round((arr[arr.length-1]||10) * (0.8 + Math.random()*0.6))))
+  if(arr.length>12) arr.shift()
+  state.metrics.mintedPerWeek = arr
+  state.metrics.dailyActive = Math.max(1, state.metrics.dailyActive + Math.round((Math.random()-0.5)*30))
+  state.metrics.uniqueHolders = Math.max(1, state.metrics.uniqueHolders + Math.round((Math.random()-0.5)*40))
+  render()
+})
+
+// Export / Import
+exportState.addEventListener('click',()=>{ const s = JSON.stringify(state, null, 2); prompt('Copy state JSON', s) })
+downloadJSON.addEventListener('click',()=>{
+  const blob = new Blob([JSON.stringify(state,null,2)],{type:'application/json'})
+  const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='shrimp_dao_state.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url)
+})
+importFile.addEventListener('change', async (ev)=>{
+  const f = ev.target.files[0]; if(!f) return
+  try{ const txt = await f.text(); const obj = JSON.parse(txt); state = Object.assign({}, defaultState, obj); render(); alert('Imported state') }catch(e){alert('Failed to import: '+e.message)}
+})
+
+// init
+render()
+
+</script>
+</body>
+</html>
